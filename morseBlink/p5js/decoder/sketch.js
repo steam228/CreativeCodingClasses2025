@@ -144,12 +144,12 @@ function draw() {
 
   // Draw tracking circle
   noFill();
-  stroke(30, 136, 229); // Material blue
+  stroke(31, 111, 235); // Material Design 3 Primary Blue
   strokeWeight(2);
   circle(trackX, trackY, trackRadius * 2);
 
   // Draw tracking circle crosshair
-  stroke(30, 136, 229);
+  stroke(31, 111, 235);
   line(trackX - trackRadius * 0.5, trackY, trackX + trackRadius * 0.5, trackY);
   line(trackX, trackY - trackRadius * 0.5, trackX, trackY + trackRadius * 0.5);
 

@@ -4,12 +4,136 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Creative Coding Classes</title>
+    <style>
+        :root {
+            --md-primary: #1f6feb;
+            --md-on-primary: #ffffff;
+            --md-primary-container: #d4e3ff;
+            --md-on-primary-container: #001a41;
+            
+            --md-surface: #fffbfe;
+            --md-on-surface: #1c1b1f;
+            --md-surface-variant: #e7e0ec;
+            --md-on-surface-variant: #49454e;
+            
+            --md-outline-variant: #cac7d0;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--md-surface);
+            color: var(--md-on-surface);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        header h1 {
+            margin: 0 0 8px 0;
+            font-size: 32px;
+            font-weight: 600;
+            color: var(--md-on-surface);
+        }
+
+        header p {
+            margin: 0;
+            font-size: 14px;
+            color: var(--md-on-surface-variant);
+        }
+
+        .projects {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .project-card {
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            background-color: var(--md-surface);
+            border: 1px solid var(--md-outline-variant);
+            border-radius: 12px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.2s;
+        }
+
+        .project-card:hover {
+            background-color: var(--md-primary-container);
+            border-color: var(--md-primary);
+            box-shadow: 0 4px 3px 0 rgba(0, 0, 0, 0.15), 0 2px 6px 0 rgba(0, 0, 0, 0.12), 0 2px 4px 0 rgba(0, 0, 0, 0.24);
+        }
+
+        .project-card h2 {
+            margin: 0 0 8px 0;
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--md-primary);
+        }
+
+        .project-card:hover h2 {
+            color: var(--md-on-primary-container);
+        }
+
+        .project-card p {
+            margin: 0;
+            font-size: 14px;
+            color: var(--md-on-surface-variant);
+            line-height: 1.5;
+        }
+
+        .project-card:hover p {
+            color: var(--md-on-primary-container);
+        }
+
+        @media (min-width: 600px) {
+            .projects {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Creative Coding Classes</h1>
-    <ul>
-        <li><a href="morseBlink/p5js/decoder/index.html">Morse Blink - Decoder</a></li>
-        <li><a href="morseBlink/p5js/encoder/index.html">Morse Blink - Encoder</a></li>
-    </ul>
+    <div class="container">
+        <header>
+            <h1>Creative Coding Classes</h1>
+            <p>Interactive morse code tools</p>
+        </header>
+
+        <div class="projects">
+            <a href="./morseBlink/p5js/decoder/index.html" class="project-card">
+                <h2>🔍 Decoder</h2>
+                <p>Decode morse code by capturing LED blinks from your camera</p>
+            </a>
+            <a href="./morseBlink/p5js/encoder/index.html" class="project-card">
+                <h2>✨ Encoder</h2>
+                <p>Convert text to morse code and visualize it with screen blinks</p>
+            </a>
+        </div>
+    </div>
 </body>
 </html>
