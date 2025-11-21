@@ -228,13 +228,16 @@ function draw() {
       10,
       height - 90
     );
-  } else if (autoCalibrate) {
+  } else if (
+    autoCalibrate &&
+    onBrightness.length > 0 &&
+    offBrightness.length > 0
+  ) {
+    let avgOn = onBrightness.reduce((a, b) => a + b, 0) / onBrightness.length;
+    let avgOff =
+      offBrightness.reduce((a, b) => a + b, 0) / offBrightness.length;
     text(
-      `Calibrated! On:${floor(
-        onBrightness.reduce((a, b) => a + b, 0) / onBrightness.length
-      )} Off:${floor(
-        offBrightness.reduce((a, b) => a + b, 0) / offBrightness.length
-      )}`,
+      `Calibrated! On:${floor(avgOn)} Off:${floor(avgOff)}`,
       10,
       height - 90
     );
