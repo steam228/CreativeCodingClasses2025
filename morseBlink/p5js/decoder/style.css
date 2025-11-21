@@ -1,0 +1,27 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: #1a1a1a;
+  color: #ffffff;
+  font-family: 'Courier New', monospace;
+}
+
+main {
+  padding: 20px;
+}
+
+h1 {
+  font-size: 24px;
+  margin: 0 0 10px 0;
+  color: #00ff00;
+}
+
+p {
+  font-size: 14px;
+  margin: 0 0 20px 0;
+}
+
+canvas {
+  display: block;
+  margin: 0 auto;
+}
