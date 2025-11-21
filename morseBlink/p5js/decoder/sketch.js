@@ -95,7 +95,7 @@ function setup() {
 function draw() {
   background(0);
 
-  // Draw video with correct proportions
+  // Calculate video scaling once for use throughout draw
   let videoAspect = capture.width / capture.height;
   let canvasAspect = width / height;
   let displayWidth, displayHeight, offsetX, offsetY;
@@ -127,17 +127,32 @@ function draw() {
   let totalBrightness = 0;
   let pixelCount = 0;
 
+  // Map canvas coordinates to capture coordinates based on video scaling
+  let captureX, captureY, captureRadius;
+
+  if (videoAspect > canvasAspect) {
+    // Video is wider, fit to height
+    captureRadius = trackRadius * (capture.width / displayWidth);
+    captureX = (trackX - offsetX) * (capture.width / displayWidth);
+    captureY = trackY * (capture.height / displayHeight);
+  } else {
+    // Video is taller, fit to width
+    captureRadius = trackRadius * (capture.height / displayHeight);
+    captureX = trackX * (capture.width / displayWidth);
+    captureY = (trackY - offsetY) * (capture.height / displayHeight);
+  }
+
   for (
-    let y = max(0, trackY - trackRadius);
-    y < min(height, trackY + trackRadius);
+    let y = max(0, captureY - captureRadius);
+    y < min(capture.height, captureY + captureRadius);
     y++
   ) {
     for (
-      let x = max(0, trackX - trackRadius);
-      x < min(width, trackX + trackRadius);
+      let x = max(0, captureX - captureRadius);
+      x < min(capture.width, captureX + captureRadius);
       x++
     ) {
-      let index = (floor(y) * width + floor(x)) * 4;
+      let index = (floor(y) * capture.width + floor(x)) * 4;
       let r = capture.pixels[index];
       let g = capture.pixels[index + 1];
       let b = capture.pixels[index + 2];
@@ -147,7 +162,7 @@ function draw() {
     }
   }
 
-  let avgBrightness = totalBrightness / pixelCount;
+  let avgBrightness = pixelCount > 0 ? totalBrightness / pixelCount : 0;
   brightnessHistory.push(avgBrightness);
   if (brightnessHistory.length > 10) {
     brightnessHistory.shift();
