@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arduino Morse Code Documentation</title>
+    <style>
+        :root {
+            --md-primary: #1f6feb;
+            --md-on-primary: #ffffff;
+            --md-primary-container: #d4e3ff;
+            --md-on-primary-container: #001a41;
+            
+            --md-secondary: #535f70;
+            --md-on-secondary: #ffffff;
+            --md-secondary-container: #b7c7db;
+            --md-on-secondary-container: #0f1820;
+            
+            --md-error: #b3261e;
+            --md-on-error: #ffffff;
+            --md-error-container: #f9dedc;
+            --md-on-error-container: #410e0b;
+            
+            --md-surface: #fffbfe;
+            --md-on-surface: #1c1b1f;
+            --md-surface-variant: #e7e0ec;
+            --md-on-surface-variant: #49454e;
+            
+            --md-outline: #79747e;
+            --md-outline-variant: #cac7d0;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--md-surface);
+            color: var(--md-on-surface);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: var(--md-primary);
+            color: var(--md-on-primary);
+            padding: 20px 24px;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.12), 0 1px 2px 0 rgba(0, 0, 0, 0.24);
+        }
+
+        header h1 {
+            margin: 0 0 8px 0;
+            font-size: 28px;
+            font-weight: 500;
+        }
+
+        header p {
+            margin: 0;
+            font-size: 14px;
+            opacity: 0.95;
+        }
+
+        .back-button {
+            display: inline-block;
+            margin: 16px 0;
+            padding: 8px 12px;
+            background-color: var(--md-primary);
+            color: var(--md-on-primary);
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            box-shadow: 0 2px 1px 0 rgba(0, 0, 0, 0.3), 0 1px 3px 0 rgba(0, 0, 0, 0.12), 0 1px 2px 0 rgba(0, 0, 0, 0.24);
+        }
+
+        .back-button:hover {
+            box-shadow: 0 4px 3px 0 rgba(0, 0, 0, 0.15), 0 2px 6px 0 rgba(0, 0, 0, 0.12), 0 2px 4px 0 rgba(0, 0, 0, 0.24);
+        }
+
+        .content {
+            flex: 1;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 32px 24px;
+            width: 100%;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        h2 {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--md-primary);
+            margin: 0 0 16px 0;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--md-outline-variant);
+        }
+
+        h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--md-on-surface);
+            margin: 24px 0 12px 0;
+        }
+
+        p, li {
+            line-height: 1.6;
+            color: var(--md-on-surface-variant);
+            margin: 0 0 12px 0;
+        }
+
+        ul {
+            margin: 12px 0;
+            padding-left: 24px;
+        }
+
+        .info-box {
+            background-color: var(--md-primary-container);
+            color: var(--md-on-primary-container);
+            border-left: 4px solid var(--md-primary);
+            padding: 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+        }
+
+        .code-section {
+            background-color: var(--md-surface-variant);
+            border: 1px solid var(--md-outline-variant);
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .code-header h4 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--md-primary);
+        }
+
+        .copy-button {
+            padding: 6px 12px;
+            background-color: var(--md-primary);
+            color: var(--md-on-primary);
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-button:hover {
+            box-shadow: 0 2px 1px 0 rgba(0, 0, 0, 0.3), 0 1px 3px 0 rgba(0, 0, 0, 0.12);
+        }
+
+        .copy-button.copied {
+            background-color: #4caf50;
+        }
+
+        pre {
+            margin: 0;
+            padding: 0;
+            background-color: transparent;
+            overflow-x: auto;
+        }
+
+        code {
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: var(--md-on-surface);
+            line-height: 1.5;
+        }
+
+        .timing-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+        }
+
+        .timing-table th {
+            background-color: var(--md-primary);
+            color: var(--md-on-primary);
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .timing-table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--md-outline-variant);
+        }
+
+        .timing-table tr:hover {
+            background-color: var(--md-primary-container);
+        }
+
+        .morse-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+        }
+
+        .morse-table th {
+            background-color: var(--md-secondary);
+            color: var(--md-on-secondary);
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .morse-table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--md-outline-variant);
+            font-family: 'Courier New', monospace;
+        }
+
+        .morse-table tr:hover {
+            background-color: var(--md-surface-variant);
+        }
+
+        .diagram {
+            background-color: var(--md-surface-variant);
+            border: 1px dashed var(--md-outline-variant);
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            color: var(--md-on-surface);
+            overflow-x: auto;
+            margin: 16px 0;
+        }
+
+        footer {
+            background-color: var(--md-surface-variant);
+            padding: 24px;
+            text-align: center;
+            border-top: 1px solid var(--md-outline-variant);
+            margin-top: 40px;
+        }
+
+        footer p {
+            margin: 0;
+            font-size: 12px;
+            color: var(--md-on-surface-variant);
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 22px;
+            }
+
+            .content {
+                padding: 16px 12px;
+            }
+
+            h2 {
+                font-size: 20px;
+            }
+
+            h3 {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Arduino Morse Code Documentation</h1>
+            <p>LED Encoder & LDR Decoder Setup Guide</p>
+        </header>
+
+        <div class="content">
+            <a href="../../index.html" class="back-button">← Back to Home</a>
+
+            <!-- Hardware Setup Section -->
+            <div class="section">
+                <h2>🔌 Hardware Setup</h2>
+                
+                <h3>Components Required</h3>
+                <ul>
+                    <li>Arduino board (Uno, Nano, or similar)</li>
+                    <li>LED (any color)</li>
+                    <li>220Ω resistor (for LED)</li>
+                    <li>LDR (Light Dependent Resistor)</li>
+                    <li>10kΩ resistor (for LDR voltage divider)</li>
+                    <li>USB cable for programming</li>
+                </ul>
+
+                <h3>Wiring Diagram</h3>
+                <div class="diagram">
+Arduino Pin 13 ----[220Ω resistor]---- LED (+) ---- GND
+Arduino GND ----[LDR]---- Analog Pin A0 ----[10kΩ pulldown]---- GND
+Arduino 5V ----[10kΩ resistor]---- Analog Pin A0
+                </div>
+
+                <div class="info-box">
+                    <strong>ℹ️ Note:</strong> The LED should be bright enough to be detected by the LDR from a distance of 5-10cm. Common Red or White LEDs work well.
+                </div>
+            </div>
+
+            <!-- Morse Timing Section -->
+            <div class="section">
+                <h2>⏱️ Morse Code Timing</h2>
+                
+                <p>Both sketches use standard International Morse Code timing:</p>
+                
+                <table class="timing-table">
+                    <thead>
+                        <tr>
+                            <th>Element</th>
+                            <th>Duration</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Dot (·)</td>
+                            <td>200ms</td>
+                            <td>Short signal</td>
+                        </tr>
+                        <tr>
+                            <td>Dash (−)</td>
+                            <td>800ms</td>
+                            <td>Long signal (4× dot duration)</td>
+                        </tr>
+                        <tr>
+                            <td>Symbol Gap</td>
+                            <td>200ms</td>
+                            <td>Space between symbols in a letter</td>
+                        </tr>
+                        <tr>
+                            <td>Letter Gap</td>
+                            <td>400ms</td>
+                            <td>Space between letters</td>
+                        </tr>
+                        <tr>
+                            <td>Word Gap</td>
+                            <td>1000ms</td>
+                            <td>Space between words</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Encoder Section -->
+            <div class="section">
+                <h2>✨ Encoder (encoder.ino)</h2>
+                
+                <p>Continuously transmits morse code by blinking the LED. By default, it sends the "SOS" distress signal.</p>
+
+                <h3>Features</h3>
+                <ul>
+                    <li>Encodes text to morse code signals</li>
+                    <li>Blinks LED in morse pattern</li>
+                    <li>Outputs morse sequence to Serial monitor</li>
+                    <li>Supports A-Z letters and 0-9 numbers</li>
+                </ul>
+
+                <h3>How to Use</h3>
+                <ol>
+                    <li>Copy the code below</li>
+                    <li>Create a new sketch in Arduino IDE</li>
+                    <li>Paste the code and upload to your board</li>
+                    <li>Open Serial Monitor (9600 baud) to see the morse sequence</li>
+                    <li>Watch the LED blink the SOS pattern</li>
+                </ol>
+
+                <h3>Code</h3>
+                <div class="code-section">
+                    <div class="code-header">
+                        <h4>encoder.ino</h4>
+                        <button class="copy-button" onclick="copyCode('encoder-code', this)">Copy Code</button>
+                    </div>
+                    <pre><code id="encoder-code">#define led 13
+
+// Morse code timing (in milliseconds)
+#define DOT_DURATION 200
+#define DASH_DURATION 800
+#define SYMBOL_GAP 200
+#define LETTER_GAP 400
+#define WORD_GAP 1000
+
+void setup()
+{
+    Serial.begin(9600);
+    pinMode(led, OUTPUT);
+    digitalWrite(led, LOW);
+    delay(1000);
+    Serial.println("Arduino Morse Encoder - SOS Message");
+}
+
+void loop()
+{
+    // Send SOS message repeatedly
+    sendMorse('S'); // ...
+    delay(LETTER_GAP);
+    sendMorse('O'); // ---
+    delay(LETTER_GAP);
+    sendMorse('S'); // ...
+    delay(WORD_GAP);
+
+    // Pause before repeating
+    delay(2000);
+}
+
+// Send a single character in morse code
+void sendMorse(char character)
+{
+    String morse = charToMorse(character);
+
+    Serial.print(character);
+    Serial.print(": ");
+    Serial.println(morse);
+
+    for (int i = 0; i < morse.length(); i++)
+    {
+        if (morse[i] == '.')
+        {
+            blinkLED(DOT_DURATION);
+        }
+        else if (morse[i] == '-')
+        {
+            blinkLED(DASH_DURATION);
+        }
+        delay(SYMBOL_GAP);
+    }
+}
+
+// Blink LED for specified duration
+void blinkLED(int duration)
+{
+    digitalWrite(led, HIGH);
+    delay(duration);
+    digitalWrite(led, LOW);
+}
+
+// Convert character to morse code
+String charToMorse(char c)
+{
+    c = toUpperCase(c);
+
+    switch (c)
+    {
+    case 'A':
+        return ".-";
+    case 'B':
+        return "-...";
+    case 'C':
+        return "-.-.";
+    case 'D':
+        return "-..";
+    case 'E':
+        return ".";
+    case 'F':
+        return "..-.";
+    case 'G':
+        return "--.";
+    case 'H':
+        return "....";
+    case 'I':
+        return "..";
+    case 'J':
+        return ".---";
+    case 'K':
+        return "-.-";
+    case 'L':
+        return ".-..";
+    case 'M':
+        return "--";
+    case 'N':
+        return "-.";
+    case 'O':
+        return "---";
+    case 'P':
+        return ".--.";
+    case 'Q':
+        return "--.-";
+    case 'R':
+        return ".-.";
+    case 'S':
+        return "...";
+    case 'T':
+        return "-";
+    case 'U':
+        return "..-";
+    case 'V':
+        return "...-";
+    case 'W':
+        return ".--";
+    case 'X':
+        return "-..-";
+    case 'Y':
+        return "-.--";
+    case 'Z':
+        return "--..";
+    case '0':
+        return "-----";
+    case '1':
+        return ".----";
+    case '2':
+        return "..---";
+    case '3':
+        return "...--";
+    case '4':
+        return "....-";
+    case '5':
+        return ".....";
+    case '6':
+        return "-....";
+    case '7':
+        return "--...";
+    case '8':
+        return "---..";
+    case '9':
+        return "----.";
+    default:
+        return "";
+    }
+}</code></pre>
+                </div>
+
+                <h3>Modifying the Message</h3>
+                <p>To change the message being sent, edit the <code>loop()</code> function:</p>
+                <div class="code-section">
+                    <pre><code>void loop() {
+    sendMorse('H');  // H: ....
+    delay(LETTER_GAP);
+    sendMorse('I');  // I: ..
+    delay(LETTER_GAP);
+    sendMorse('!');  // ! (not supported)
+    delay(WORD_GAP);
+    delay(2000);
+}</code></pre>
+                </div>
+            </div>
+
+            <!-- Decoder Section -->
+            <div class="section">
+                <h2>🔍 Decoder (decoder.ino)</h2>
+                
+                <p>Reads light changes from the LDR and decodes morse code signals back into text. Includes real-time calibration via Serial monitor.</p>
+
+                <h3>Features</h3>
+                <ul>
+                    <li>Monitors LDR for light changes</li>
+                    <li>Auto-detects dots and dashes</li>
+                    <li>Automatically recognizes letter and word gaps</li>
+                    <li>Outputs LDR values for calibration</li>
+                    <li>Prints decoded morse patterns and letters to Serial</li>
+                </ul>
+
+                <h3>Calibration</h3>
+                <ol>
+                    <li>Upload the decoder sketch</li>
+                    <li>Open Serial Monitor (9600 baud)</li>
+                    <li>Note the LDR values with LED OFF (bright): ~600-800</li>
+                    <li>Note the LDR values with LED ON (dark): ~100-400</li>
+                    <li>Set <code>THRESHOLD_DARK</code> to approximately halfway between the two values</li>
+                    <li>Re-upload and test</li>
+                </ol>
+
+                <h3>Code</h3>
+                <div class="code-section">
+                    <div class="code-header">
+                        <h4>decoder.ino</h4>
+                        <button class="copy-button" onclick="copyCode('decoder-code', this)">Copy Code</button>
+                    </div>
+                    <pre><code id="decoder-code">#define ldr A0
+#define led 13
+
+// Morse code timing (in milliseconds)
+#define DOT_DURATION 200
+#define DASH_DURATION 800
+#define SYMBOL_GAP 200
+#define LETTER_GAP 400
+#define WORD_GAP 1000
+#define THRESHOLD_DARK 400 // Adjust this value based on your LDR readings
+
+int ldrValue = 0;
+int threshold = THRESHOLD_DARK;
+bool isLightOn = false;
+bool lastLightOn = false;
+unsigned long lastStateChange = 0;
+unsigned long signalDuration = 0;
+unsigned long gapDuration = 0;
+
+String currentMorse = "";
+String decodedText = "";
+
+// Morse to character dictionary
+const char morseMap[26][6] = {
+    ".-",   // A
+    "-...", // B
+    "-.-.", // C
+    "-..",  // D
+    ".",    // E
+    "..-.", // F
+    "--.",  // G
+    "....", // H
+    "..",   // I
+    ".---", // J
+    "-.-",  // K
+    ".-..", // L
+    "--",   // M
+    "-.",   // N
+    "---",  // O
+    ".--.", // P
+    "--.-", // Q
+    ".-.",  // R
+    "...",  // S
+    "-",    // T
+    "..-",  // U
+    "...-", // V
+    ".--",  // W
+    "-..-", // X
+    "-.--", // Y
+    "--.."  // Z
+};
+
+void setup()
+{
+    Serial.begin(9600);
+    pinMode(ldr, INPUT);
+    pinMode(led, OUTPUT);
+    digitalWrite(led, LOW);
+
+    delay(1000);
+    Serial.println("Arduino Morse Decoder");
+    Serial.println("Adjust THRESHOLD_DARK value (currently: " + String(threshold) + ")");
+    Serial.println("Watch LDR values below...");
+}
+
+void loop()
+{
+    // Read LDR value
+    ldrValue = analogRead(ldr);
+
+    // Print LDR value every 100ms for calibration
+    static unsigned long lastPrint = 0;
+    if (millis() - lastPrint > 100)
+    {
+        Serial.println("LDR: " + String(ldrValue));
+        lastPrint = millis();
+    }
+
+    // Determine if light is on (high value = bright, low value = dark with LED on)
+    isLightOn = (ldrValue > threshold);
+
+    // Detect state change
+    if (isLightOn != lastLightOn)
+    {
+        unsigned long currentTime = millis();
+
+        if (lastLightOn)
+        {
+            // Light was on, now off - process signal
+            signalDuration = currentTime - lastStateChange;
+            processSignal(signalDuration);
+        }
+        else
+        {
+            // Light was off, now on - check gap
+            gapDuration = currentTime - lastStateChange;
+            checkForGap(gapDuration);
+        }
+
+        lastLightOn = isLightOn;
+        lastStateChange = currentTime;
+    }
+
+    delay(10);
+}
+
+void processSignal(unsigned long duration)
+{
+    // Classify signal as dot or dash
+    unsigned int midpoint = (DOT_DURATION + DASH_DURATION) / 2;
+
+    if (duration < midpoint)
+    {
+        currentMorse += ".";
+        Serial.print(".");
+    }
+    else
+    {
+        currentMorse += "-";
+        Serial.print("-");
+    }
+}
+
+void checkForGap(unsigned long duration)
+{
+    // Symbol gaps: ignore (200-300ms)
+    if (duration < 350)
+    {
+        return;
+    }
+
+    // Letter gap detected (around 400ms)
+    if (duration >= 350 && duration < 550 && currentMorse.length() > 0)
+    {
+        char letter = morseToChar(currentMorse);
+        if (letter != '?')
+        {
+            decodedText += letter;
+            Serial.print(" [" + String(letter) + "] ");
+        }
+        currentMorse = "";
+    }
+
+    // Word gap detected (600ms+)
+    if (duration >= 550)
+    {
+        if (currentMorse.length() > 0)
+        {
+            char letter = morseToChar(currentMorse);
+            if (letter != '?')
+            {
+                decodedText += letter;
+                Serial.print(" [" + String(letter) + "] ");
+            }
+            currentMorse = "";
+        }
+        decodedText += " ";
+        Serial.println(" [SPACE] ");
+    }
+}
+
+char morseToChar(String morse)
+{
+    // Check against morse dictionary
+    for (int i = 0; i < 26; i++)
+    {
+        if (morse == morseMap[i])
+        {
+            return 'A' + i;
+        }
+    }
+    return '?';
+}</code></pre>
+                </div>
+            </div>
+
+            <!-- Morse Reference Section -->
+            <div class="section">
+                <h2>📖 Morse Code Reference</h2>
+                
+                <table class="morse-table">
+                    <thead>
+                        <tr>
+                            <th>Character</th>
+                            <th>Morse Code</th>
+                            <th>Character</th>
+                            <th>Morse Code</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>A</td>
+                            <td>.-</td>
+                            <td>N</td>
+                            <td>-.</td>
+                        </tr>
+                        <tr>
+                            <td>B</td>
+                            <td>-...</td>
+                            <td>O</td>
+                            <td>---</td>
+                        </tr>
+                        <tr>
+                            <td>C</td>
+                            <td>-.-.</td>
+                            <td>P</td>
+                            <td>.--.</td>
+                        </tr>
+                        <tr>
+                            <td>D</td>
+                            <td>-..</td>
+                            <td>Q</td>
+                            <td>--.-</td>
+                        </tr>
+                        <tr>
+                            <td>E</td>
+                            <td>.</td>
+                            <td>R</td>
+                            <td>.-.</td>
+                        </tr>
+                        <tr>
+                            <td>F</td>
+                            <td>...-.</td>
+                            <td>S</td>
+                            <td>...</td>
+                        </tr>
+                        <tr>
+                            <td>G</td>
+                            <td>--.</td>
+                            <td>T</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td>H</td>
+                            <td>....</td>
+                            <td>U</td>
+                            <td>..-</td>
+                        </tr>
+                        <tr>
+                            <td>I</td>
+                            <td>..</td>
+                            <td>V</td>
+                            <td>...-</td>
+                        </tr>
+                        <tr>
+                            <td>J</td>
+                            <td>.---</td>
+                            <td>W</td>
+                            <td>.--</td>
+                        </tr>
+                        <tr>
+                            <td>K</td>
+                            <td>-.-</td>
+                            <td>X</td>
+                            <td>-..-</td>
+                        </tr>
+                        <tr>
+                            <td>L</td>
+                            <td>.-..</td>
+                            <td>Y</td>
+                            <td>-.--</td>
+                        </tr>
+                        <tr>
+                            <td>M</td>
+                            <td>--</td>
+                            <td>Z</td>
+                            <td>--..</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Troubleshooting Section -->
+            <div class="section">
+                <h2>🔧 Troubleshooting</h2>
+                
+                <h3>LED not blinking</h3>
+                <ul>
+                    <li>Check LED polarity (longer leg = positive)</li>
+                    <li>Verify Pin 13 connection</li>
+                    <li>Try with USB power directly (not external)</li>
+                </ul>
+
+                <h3>LDR not detecting changes</h3>
+                <ul>
+                    <li>Make sure LED is bright and close to LDR (5-10cm)</li>
+                    <li>Check LDR connections to A0</li>
+                    <li>Verify resistor values (10kΩ pulldown)</li>
+                    <li>Check serial output for LDR readings</li>
+                </ul>
+
+                <h3>Threshold too high or too low</h3>
+                <ul>
+                    <li>Read serial values with LED on/off</li>
+                    <li>Adjust THRESHOLD_DARK to midpoint between readings</li>
+                    <li>Typical range: 300-500 depending on environment</li>
+                </ul>
+
+                <h3>Decoding incorrect characters</h3>
+                <ul>
+                    <li>Verify morse timing matches specifications</li>
+                    <li>Check that encoder and decoder use same timing</li>
+                    <li>Ensure stable power supply (no voltage drops)</li>
+                </ul>
+            </div>
+
+            <a href="../../index.html" class="back-button">← Back to Home</a>
+        </div>
+
+        <footer>
+            <p>Arduino Morse Code Project | Created with Material Design 3</p>
+        </footer>
+    </div>
+
+    <script>
+        function copyCode(elementId, button) {
+            const code = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                button.textContent = '✓ Copied!';
+                button.classList.add('copied');
+                setTimeout(() => {
+                    button.textContent = 'Copy Code';
+                    button.classList.remove('copied');
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
