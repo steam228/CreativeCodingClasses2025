@@ -13,6 +13,10 @@ let onBrightness = [];
 let offBrightness = [];
 let calibrationSamples = 0;
 let maxCalibrationSamples = 50;
+let avgBrightness = 0; // Track brightness value across frames
+
+// UI Elements
+let statusDisplay, morseOutput, textOutput;
 
 // Timing constants (in milliseconds)
 const DOT_DURATION = 200;
@@ -63,26 +67,37 @@ const morseCode = {
 };
 
 function setup() {
-  createCanvas(windowWidth, windowHeight);
+  // Get container and create canvas
+  let container = document.getElementById("p5-container");
+  let rect = container.getBoundingClientRect();
+  let canvas = createCanvas(rect.width, rect.height);
+  canvas.parent("p5-container");
+
+  // Get UI elements
+  statusDisplay = document.getElementById("status");
+  morseOutput = document.getElementById("morse-output");
+  textOutput = document.getElementById("text-output");
+  thresholdSlider = document.getElementById("threshold");
+
+  // Setup video capture with mirroring
   capture = createCapture(VIDEO);
   capture.hide();
+  capture.elt.style.transform = "scaleX(-1)"; // Mirror the video
 
   trackX = width / 2;
   trackY = height / 2;
 
-  // Create threshold slider
-  createP("Threshold:").position(10, 490).style("color", "white");
-  thresholdSlider = createSlider(20, 200, 100);
-  thresholdSlider.position(100, 500);
+  // Setup threshold slider event listener
+  thresholdSlider.addEventListener("input", (e) => {
+    threshold = parseFloat(e.target.value);
+    document.getElementById("threshold-value").textContent =
+      Math.floor(threshold);
+  });
 
-  // Create auto-calibrate checkbox
-  let autoCalDiv = createDiv("");
-  autoCalDiv.position(250, 490);
-  let checkbox = createCheckbox("Auto-calibrate", true);
-  checkbox.parent(autoCalDiv);
-  checkbox.style("color", "white");
-  checkbox.changed(() => {
-    autoCalibrate = checkbox.checked();
+  // Setup auto-calibrate checkbox
+  let autoCalCheckbox = document.getElementById("auto-calibrate");
+  autoCalCheckbox.addEventListener("change", (e) => {
+    autoCalibrate = e.target.checked;
     if (autoCalibrate) {
       // Reset calibration data
       onBrightness = [];
@@ -114,13 +129,29 @@ function draw() {
     offsetY = (height - displayHeight) / 2;
   }
 
-  image(capture, offsetX, offsetY, displayWidth, displayHeight);
+  // Mirror the display horizontally
+  push();
+  translate(offsetX + displayWidth / 2, offsetY + displayHeight / 2);
+  scale(-1, 1); // Mirror horizontally
+  image(
+    capture,
+    -displayWidth / 2,
+    -displayHeight / 2,
+    displayWidth,
+    displayHeight
+  );
+  pop();
 
   // Draw tracking circle
   noFill();
-  stroke(0, 255, 0);
+  stroke(30, 136, 229); // Material blue
   strokeWeight(2);
   circle(trackX, trackY, trackRadius * 2);
+
+  // Draw tracking circle crosshair
+  stroke(30, 136, 229);
+  line(trackX - trackRadius * 0.5, trackY, trackX + trackRadius * 0.5, trackY);
+  line(trackX, trackY - trackRadius * 0.5, trackX, trackY + trackRadius * 0.5);
 
   // Sample brightness in tracking area
   capture.loadPixels();
@@ -162,7 +193,11 @@ function draw() {
     }
   }
 
-  let avgBrightness = pixelCount > 0 ? totalBrightness / pixelCount : 0;
+  avgBrightness = pixelCount > 0 ? totalBrightness / pixelCount : 0;
+  brightnessHistory.push(avgBrightness);
+  if (brightnessHistory.length > 10) {
+    brightnessHistory.shift();
+  }
   brightnessHistory.push(avgBrightness);
   if (brightnessHistory.length > 10) {
     brightnessHistory.shift();
@@ -187,11 +222,13 @@ function draw() {
       let avgOff =
         offBrightness.reduce((a, b) => a + b, 0) / offBrightness.length;
       threshold = (avgOn + avgOff) / 2;
-      thresholdSlider.value(threshold);
+      thresholdSlider.value = threshold;
+      document.getElementById("threshold-value").textContent =
+        Math.floor(threshold);
     }
   } else if (!autoCalibrate) {
     // Manual mode - use slider value
-    threshold = thresholdSlider.value();
+    threshold = parseFloat(thresholdSlider.value);
   }
 
   // Detect state changes
@@ -212,22 +249,17 @@ function draw() {
     lastStateChange = millis();
   }
 
-  // Display info
-  fill(255);
-  noStroke();
-  textSize(16);
-  text(`Brightness: ${floor(avgBrightness)}`, 10, height - 130);
-  text(
-    `Threshold: ${floor(threshold)} ${autoCalibrate ? "(auto)" : "(manual)"}`,
-    10,
-    height - 110
-  );
+  // Update UI
+  updateStatusDisplay();
+  morseOutput.textContent = currentMessage;
+  textOutput.textContent = decodedText;
+}
+
+function updateStatusDisplay() {
+  let statusText = "";
+
   if (autoCalibrate && calibrationSamples < maxCalibrationSamples) {
-    text(
-      `Calibrating... ${calibrationSamples}/${maxCalibrationSamples}`,
-      10,
-      height - 90
-    );
+    statusText = `Calibrating... ${calibrationSamples}/${maxCalibrationSamples}`;
   } else if (
     autoCalibrate &&
     onBrightness.length > 0 &&
@@ -236,27 +268,18 @@ function draw() {
     let avgOn = onBrightness.reduce((a, b) => a + b, 0) / onBrightness.length;
     let avgOff =
       offBrightness.reduce((a, b) => a + b, 0) / offBrightness.length;
-    text(
-      `Calibrated! On:${floor(avgOn)} Off:${floor(avgOff)}`,
-      10,
-      height - 90
-    );
+    statusText = `Calibrated • On: ${Math.floor(avgOn)} Off: ${Math.floor(
+      avgOff
+    )}`;
   } else {
-    text(`Status: ${isLightOn ? "ON" : "OFF"}`, 10, height - 90);
+    statusText = `${isLightOn ? "● ON" : "● OFF"} • Brightness: ${Math.floor(
+      avgBrightness
+    )}`;
   }
-  text(`Status: ${isLightOn ? "ON" : "OFF"}`, 10, height - 70);
-  text(
-    `Timing: Dot=${DOT_DURATION}ms Dash=${DASH_DURATION}ms LetterGap=${LETTER_GAP}ms`,
-    10,
-    height - 50
-  );
-  text(`Current: ${currentMessage}`, 10, height - 30);
-  text(`Decoded: ${decodedText}`, 10, height - 10);
 
-  // Instructions
-  fill(255, 255, 0);
-  textSize(14);
-  text("Click LED | R: reset | E: clear | C: recalibrate", 10, 20);
+  if (statusDisplay.textContent !== statusText) {
+    statusDisplay.textContent = statusText;
+  }
 }
 
 function processSignal(signalDuration) {
@@ -337,5 +360,9 @@ function keyPressed() {
 }
 
 function windowResized() {
-  resizeCanvas(windowWidth, windowHeight);
+  let container = document.getElementById("p5-container");
+  if (container) {
+    let rect = container.getBoundingClientRect();
+    resizeCanvas(rect.width, rect.height);
+  }
 }

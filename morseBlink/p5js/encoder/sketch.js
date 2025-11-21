@@ -7,6 +7,10 @@ let stateStartTime = 0;
 let currentState = "off"; // 'on', 'off', 'done'
 let inputText = "";
 
+// UI Elements
+let statusDisplay;
+let morseDisplay;
+
 // Timing constants (in milliseconds) - matching decoder
 const DOT_DURATION = 200;
 const DASH_DURATION = 800;
@@ -57,78 +61,55 @@ const textToMorse = {
 };
 
 function setup() {
-  createCanvas(windowWidth, windowHeight);
+  // Get container and create canvas
+  let container = document.getElementById("p5-container");
+  let rect = container.getBoundingClientRect();
+  createCanvas(rect.width, rect.height);
 
-  // Create input field
-  let inputDiv = createDiv("");
-  inputDiv.position(20, 20);
-  inputDiv.style("background", "rgba(0,0,0,0.7)");
-  inputDiv.style("padding", "20px");
-  inputDiv.style("border-radius", "10px");
+  // Get UI elements
+  morseInput = document.getElementById("morse-input");
+  startButton = document.getElementById("start-button");
+  statusDisplay = document.getElementById("status-display");
+  morseDisplay = document.getElementById("morse-text");
 
-  createP("Enter text to convert to Morse code:")
-    .parent(inputDiv)
-    .style("color", "white")
-    .style("margin", "0 0 10px 0");
-
-  morseInput = createInput("HELLO WORLD");
-  morseInput.parent(inputDiv);
-  morseInput.size(300);
-  morseInput.style("font-size", "16px");
-  morseInput.style("padding", "8px");
-
-  startButton = createButton("Start Flashing");
-  startButton.parent(inputDiv);
-  startButton.style("margin-left", "10px");
-  startButton.style("padding", "8px 16px");
-  startButton.style("font-size", "16px");
-  startButton.style("cursor", "pointer");
-  startButton.mousePressed(startMorse);
-
-  // Info text
-  createP("Timings: Dot=200ms, Dash=800ms, Letter Gap=400ms, Word Gap=600ms")
-    .parent(inputDiv)
-    .style("color", "#aaa")
-    .style("margin", "10px 0 0 0")
-    .style("font-size", "12px");
+  // Setup button click
+  startButton.addEventListener("click", startMorse);
 }
 
 function draw() {
   if (isPlaying) {
     playMorseSequence();
   } else {
-    background(20);
+    background(18); // Very dark gray
   }
 
-  // Display current status
-  if (isPlaying) {
-    fill(255);
-    textSize(32);
-    textAlign(CENTER, BOTTOM);
-    text(`Playing: "${inputText}"`, width / 2, height - 100);
+  // Update status display
+  updateStatus();
+}
 
-    textSize(20);
-    text(
-      `Progress: ${currentIndex + 1} / ${morseSequence.length}`,
-      width / 2,
-      height - 60
-    );
+function updateStatus() {
+  let statusText = "";
 
-    // Show current morse code
-    if (currentIndex < morseSequence.length) {
-      let seq = morseSequence[currentIndex];
-      if (seq.type === "signal") {
-        text(
-          `Current: ${seq.symbol === "." ? "DOT" : "DASH"}`,
-          width / 2,
-          height - 30
-        );
-      } else if (seq.type === "letter_gap") {
-        text("Current: LETTER GAP", width / 2, height - 30);
-      } else if (seq.type === "word_gap") {
-        text("Current: WORD GAP", width / 2, height - 30);
-      }
-    }
+  if (!isPlaying) {
+    statusText = "Ready";
+  } else if (currentIndex >= morseSequence.length) {
+    statusText = "Complete";
+  } else {
+    let percent = Math.round((currentIndex / morseSequence.length) * 100);
+    let currentItem = morseSequence[currentIndex];
+    let type =
+      currentItem.type === "signal"
+        ? currentItem.symbol === "."
+          ? "DOT"
+          : "DASH"
+        : currentItem.type.toUpperCase().replace(/_/g, " ");
+    statusText = `${type} (${currentIndex + 1}/${
+      morseSequence.length
+    }) ${percent}%`;
+  }
+
+  if (statusDisplay.textContent !== statusText) {
+    statusDisplay.textContent = statusText;
   }
 }
 
@@ -137,12 +118,16 @@ function startMorse() {
     // Stop current playback
     isPlaying = false;
     currentIndex = 0;
-    startButton.html("Start Flashing");
+    startButton.textContent = "Start Flashing";
+    morseInput.disabled = false;
     return;
   }
 
-  inputText = morseInput.value().toUpperCase();
-  if (inputText.length === 0) return;
+  inputText = morseInput.value.toUpperCase();
+  if (inputText.length === 0) {
+    alert("Please enter some text!");
+    return;
+  }
 
   // Convert text to morse sequence
   morseSequence = textToMorseSequence(inputText);
@@ -152,12 +137,24 @@ function startMorse() {
     return;
   }
 
+  // Display morse code
+  let morseText = "";
+  for (let char of inputText) {
+    if (char === " ") {
+      morseText += " / ";
+    } else {
+      morseText += (textToMorse[char] || "") + " ";
+    }
+  }
+  morseDisplay.textContent = morseText.trim();
+
   // Start playing
   isPlaying = true;
   currentIndex = 0;
   currentState = "off";
   stateStartTime = millis();
-  startButton.html("Stop");
+  startButton.textContent = "Stop Flashing";
+  morseInput.disabled = true;
 }
 
 function textToMorseSequence(text) {
@@ -210,8 +207,9 @@ function playMorseSequence() {
     // Finished
     isPlaying = false;
     currentIndex = 0;
-    startButton.html("Start Flashing");
-    background(20);
+    startButton.textContent = "Start Flashing";
+    morseInput.disabled = false;
+    background(18);
     return;
   }
 
@@ -233,8 +231,8 @@ function playMorseSequence() {
       currentIndex++;
     }
   } else {
-    // Gap (black screen)
-    background(0);
+    // Gap (dark screen)
+    background(18);
 
     if (elapsed >= currentItem.durationMs) {
       stateStartTime = millis();
@@ -244,17 +242,23 @@ function playMorseSequence() {
 }
 
 function windowResized() {
-  resizeCanvas(windowWidth, windowHeight);
+  let container = document.getElementById("p5-container");
+  if (container) {
+    let rect = container.getBoundingClientRect();
+    resizeCanvas(rect.width, rect.height);
+  }
 }
 
 function keyPressed() {
   if (key === " ") {
     startMorse();
+    return false; // Prevent default space behavior
   }
 
   if (key === "Escape") {
     isPlaying = false;
     currentIndex = 0;
-    startButton.html("Start Flashing");
+    startButton.textContent = "Start Flashing";
+    morseInput.disabled = false;
   }
 }

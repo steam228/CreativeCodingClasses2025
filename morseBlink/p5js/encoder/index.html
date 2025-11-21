@@ -4,9 +4,79 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.js"></script>
     <link rel="stylesheet" type="text/css" href="style.css">
     <meta charset="utf-8" />
-    <title>Morse Code Generator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morse Encoder</title>
   </head>
   <body>
+    <div class="container">
+      <header>
+        <h1>Morse Encoder</h1>
+        <p class="subtitle">Convert text to Morse code signals</p>
+      </header>
+      
+      <div class="content">
+        <div id="p5-container" class="display-container"></div>
+        
+        <div class="control-panel">
+          <div class="section">
+            <h2>Input</h2>
+            <input 
+              type="text" 
+              id="morse-input" 
+              class="text-input" 
+              placeholder="Enter text to convert..."
+              value="HELLO WORLD"
+            >
+          </div>
+          
+          <div class="section">
+            <h2>Control</h2>
+            <button id="start-button" class="action-button">Start Flashing</button>
+            <div class="button-info">Space bar: Start/Stop | Esc: Stop</div>
+          </div>
+          
+          <div class="section">
+            <h2>Status</h2>
+            <div id="status-display" class="status-info">Ready</div>
+          </div>
+          
+          <div class="section">
+            <h2>Output</h2>
+            <div id="morse-display" class="output-box morse-code">
+              <div class="label">Morse Sequence</div>
+              <div id="morse-text" class="morse-text"></div>
+            </div>
+          </div>
+          
+          <div class="section">
+            <h2>Timing Reference</h2>
+            <div class="timing-info">
+              <div class="timing-row">
+                <span>Dot (·)</span>
+                <strong>200ms</strong>
+              </div>
+              <div class="timing-row">
+                <span>Dash (−)</span>
+                <strong>800ms</strong>
+              </div>
+              <div class="timing-row">
+                <span>Symbol Gap</span>
+                <strong>200ms</strong>
+              </div>
+              <div class="timing-row">
+                <span>Letter Gap</span>
+                <strong>400ms</strong>
+              </div>
+              <div class="timing-row">
+                <span>Word Gap</span>
+                <strong>1000ms</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
     <script src="sketch.js"></script>
   </body>
 </html>
