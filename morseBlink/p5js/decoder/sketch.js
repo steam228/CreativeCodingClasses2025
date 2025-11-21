@@ -198,10 +198,6 @@ function draw() {
   if (brightnessHistory.length > 10) {
     brightnessHistory.shift();
   }
-  brightnessHistory.push(avgBrightness);
-  if (brightnessHistory.length > 10) {
-    brightnessHistory.shift();
-  }
 
   // Auto-calibration logic
   if (autoCalibrate && calibrationSamples < maxCalibrationSamples) {

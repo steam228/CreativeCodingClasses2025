@@ -64,7 +64,8 @@ function setup() {
   // Get container and create canvas
   let container = document.getElementById("p5-container");
   let rect = container.getBoundingClientRect();
-  createCanvas(rect.width, rect.height);
+  let canvas = createCanvas(rect.width, rect.height);
+  canvas.parent("p5-container");
 
   // Get UI elements
   morseInput = document.getElementById("morse-input");
