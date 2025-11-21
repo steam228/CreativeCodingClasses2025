@@ -13,7 +13,7 @@ const DASH_DURATION = 800;
 const SYMBOL_GAP_DOT = 200;
 const SYMBOL_GAP_DASH = 300;
 const LETTER_GAP = 400;
-const WORD_GAP = 600;
+const WORD_GAP = 1000;
 
 // Text to morse code dictionary
 const textToMorse = {
